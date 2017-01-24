@@ -4,7 +4,7 @@
 <script>
 $(function() {
     var a= $('#operate');
-    var b= $('#sql');
+    var b= $('#sqlarea');
     var options= $('#operate option');
     a.on('change',function() {
 	var result=$('#operate option').filter(':selected').val();
@@ -29,7 +29,9 @@ $(function() {
 	    url:frm.attr('action'),
 	    data:frm.serialize(),
 	    success: function (data) {
-		alert(data);
+		//alert(data);
+    		$('#newadd').remove()
+		$('#content').append(data);
 	    }
 
    });
@@ -48,7 +50,7 @@ $(function() {
 {% block content %}
 
 
-<div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main">
+<div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main" id='content'>
     <h1 class='page-header'>Oracle命令</h1>
 <form  id='usubmit'action="/oracle/commandresult/" method="get">
 <div class="form-group">
@@ -75,9 +77,9 @@ $(function() {
      </select>
 </div>
 
-<div id="sql" class="form-group" hidden>
-    <label for="sql">请输入相关文本</label>
-    <textarea class="form-control" rows="3"></textarea>
+<div id='sqlarea'  class="form-group" hidden>
+    <label for="sql22">请输入相关文本</label>
+    <textarea class="form-control" name='sql'  rows=3 ></textarea>
 </div>
 
 <button type="submit"  class="btn btn-primary" value="OK">Submit</button>

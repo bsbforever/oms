@@ -1,0 +1,29 @@
+{% load nbsp %} 
+<div>
+<h3>{{title}}</h3>
+<table class='table'>
+  <thead>
+    <tr>
+{% for i in tr %}
+	<th>{{i}}</th>
+{%endfor%}
+    </tr>
+  </thead>
+{% for a,b,c,d,e,f,g,h,i,j in row %}
+<tbody>
+            <tr>
+		<td>{% if a != None %}{{a|nbsp}}{%else%}{% endif %}</td>
+		<td>{% if b != None %}{{b}}{%else%}{% endif %}</td>
+		<td>{% if c != None %}{{c}}{%else%}{% endif %}</td>
+		<td>{% if d != None %}{{d}}{%else%}{% endif %}</td>
+		<td>{% if e != None %}{{e}}{%else%}{% endif %}</td>
+		<td>{% if f != None %}{{f}}{%else%}{% endif %}</td>
+		<td>{% if g != None %}{{g}}{%else%}{% endif %}</td>
+		<td>{% if h != None %}{{h}}{%else%}{% endif %}</td>
+		<td>{% if i != None %}{{i}}{%else%}{% endif %}</td>
+		<td>{% if j != None %}{{j}}{%else%}{% endif %}</td>
+            </tr>
+</tbody>
+{% endfor %}
+</table>
+</div>

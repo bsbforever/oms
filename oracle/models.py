@@ -29,3 +29,31 @@ class oraclelist(models.Model):
     class Meta:
         app_label='oracle'
 
+
+class sqlplan(models.Model):
+    #ipaddress=models.GenericIPAddressField()
+    #tnsname=models.CharField(max_length=50)
+    #sql_id=models.CharField(max_length=50)
+    child_number=models.BigIntegerField()
+    #plan_time=models.BigIntegerField()
+    pid=models.BigIntegerField()
+    depth=models.BigIntegerField()
+    description=models.CharField(max_length=100,null=True)
+    object_owner=models.CharField(max_length=65,null=True)
+    object_name=models.CharField(max_length=65,null=True)
+    object_node=models.CharField(max_length=65,null=True)
+    cost=models.CharField(max_length=100,null=True)
+    cardinality=models.CharField(max_length=65,null=True)
+    bytes=models.CharField(max_length=65,null=True)
+    io_cost=models.CharField(max_length=65,null=True)
+    #cost=models.BigIntegerField(null=True)
+    #cardinality=models.BigIntegerField(null=True)
+    #bytes=models.BigIntegerField(null=True)
+    #io_cost=models.BigIntegerField(null=True)
+    access_predicates=models.CharField(max_length=1000,null=True,default='')
+    filter_predicates=models.CharField(max_length=1000,null=True,default='')
+    #plan_hash_value=models.CharField(max_length=50)
+    def __unicode__(self):
+        return self.description
+    class Meta:
+        app_label='oracle'

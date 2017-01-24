@@ -9,7 +9,7 @@ import time
 import datetime
 from django.views.decorators.http import require_http_methods
 from oracle.monitor.getoraclecommandresult import *
-#from oracle.monitor.getoracleperformaceinfo import *
+from oracle.monitor.getoracleperformaceinfo import *
 from django.shortcuts import render
 from django.shortcuts import render_to_response
 from django.http import HttpResponse
@@ -19,6 +19,7 @@ from django.http import HttpResponseRedirect
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from oracle.models import *
 from oracle.form import *
+from django.template.loader import render_to_string
 #from oracle.monitor.test import *
 #from oracle.monitor.oracletopsql import *
 #from oracle.monitor.highcharts_template import *
@@ -77,5 +78,222 @@ def commandresult(request):
             tr=['数据文件名称','文件大小','表空间','自动扩展','创建时间']
             dic ={'title':title,'tr':tr,'row':row}
             #return render_to_response('oracle_command_result1.html',dic)
-            return HttpResponse(dic)
+            html= render_to_string('oracle_command_result_5.html',dic)
+            return HttpResponse(html)
+    elif command_content=='check_temp_usage':
+        try:
+            db = cx_Oracle.connect(username+'/'+password+'@'+ipaddress+':'+port+'/'+tnsname ,mode=cx_Oracle.SYSDBA)
+        except Exception , e:
+            content= (ipaddress+' is Unreachable,The reason is '+ str(e)).strip()
+            return HttpResponse(content)
+        else:
+            cursor = db.cursor()
+            row=gettempusage(cursor)
+            cursor.close()
+            db.close()
+            title=ipaddress+'-'+tnsname+' 数据库临时文件使用率为: '
+            dic ={'title':title,'row':row}
+            return render_to_response('oracle_command_result_1.html',dic)
+    elif command_content=='check_executions':
+        try:
+            db = cx_Oracle.connect(username+'/'+password+'@'+ipaddress+':'+port+'/'+tnsname ,mode=cx_Oracle.SYSDBA)
+        except Exception , e:
+            content= (ipaddress+' is Unreachable,The reason is '+ str(e)).strip()
+            return HttpResponse(content)
+        else:
+            cursor = db.cursor()
+            row=getexecutions(cursor)
+            cursor.close()
+            db.close()
+            title='执行次数等于一语句-'+ipaddress+'-'+tnsname
+            tr=['SQL语句','次数','模块']
+            dic ={'title':title,'tr':tr,'row':row}
+            return render_to_response('oracle_command_result_3.html',dic)
 
+    elif command_content=='check_unboundsql':
+        try:
+            db = cx_Oracle.connect(username+'/'+password+'@'+ipaddress+':'+port+'/'+tnsname ,mode=cx_Oracle.SYSDBA)
+        except Exception , e:
+            content= (ipaddress+' is Unreachable,The reason is '+ str(e)).strip()
+            return HttpResponse(content)
+        else:
+    	    unboundsql  = str(request.GET['sql'])
+	    #return HttpResponse(unboundsql)
+            cursor = db.cursor()
+            row=getunboundsql(cursor,unboundsql)
+            cursor.close()
+            db.close()
+            title='未绑定变量语句-'+ipaddress+'-'+tnsname
+            tr=['SQL语句','哈希值','模块','第一次载入时间','上一次载入时间']
+            dic ={'title':title,'tr':tr,'row':row}
+            return render_to_response('oracle_command_result_5.html',dic)
+
+    elif command_content=='check_analyzed_time':
+        table_name1=[]
+        try:
+            db = cx_Oracle.connect(username+'/'+password+'@'+ipaddress+':'+port+'/'+tnsname ,mode=cx_Oracle.SYSDBA)
+        except Exception , e:
+            content= (ipaddress+' is Unreachable,The reason is '+ str(e)).strip()
+            return HttpResponse(content)
+        else:
+            table_name  = str(request.GET['sql'])
+            table_name=table_name.split()
+            for i in table_name:
+                table_name1.append('\''+str(i).strip().upper()+'\'')
+            table_name=','.join(table_name1)
+
+
+            cursor = db.cursor()
+            row=getanalyzedtime(cursor,table_name)
+            cursor.close()
+            db.close()
+            title='表分析的时间-'+ipaddress+'-'+tnsname
+            tr=['OWNER','TABLE_NAME','NUM_ROWS','SAMPLE_SIZE','LAST_ANALYZED']
+            dic ={'title':title,'tr':tr,'row':row}
+            return render_to_response('oracle_command_result_5.html',dic)
+    elif command_content=='check_segments_size':
+#       owner1=[]
+        try:
+            db = cx_Oracle.connect(username+'/'+password+'@'+ipaddress+':'+port+'/'+tnsname ,mode=cx_Oracle.SYSDBA)
+        except Exception , e:
+            content= (ipaddress+' is Unreachable,The reason is '+ str(e)).strip()
+            return HttpResponse(content)
+        else:
+ #           owner  = str(request.GET['sql'])
+#           owner=owner.split()
+#           for i in owner:
+#               owner1.append('\''+str(i).strip().upper()+'\'')
+#           owner=','.join(owner1)
+
+
+            cursor = db.cursor()
+            #row=getsegmentssize(cursor,owner)
+            row=getsegmentssize(cursor)
+            cursor.close()
+            db.close()
+            title='数据库段的大小-'+ipaddress+'-'+tnsname
+            tr=['OWNER','SEGMENTS_NAME','SEGMENTS_TYPE','TABLESPACE_NAME','BYTES/GB']
+            dic ={'title':title,'tr':tr,'row':row}
+            return render_to_response('oracle_command_result_5.html',dic)
+    elif command_content=='check_process_text':
+        pid1=[]
+        try:
+            db = cx_Oracle.connect(username+'/'+password+'@'+ipaddress+':'+port+'/'+tnsname ,mode=cx_Oracle.SYSDBA)
+        except Exception , e:
+            content= (ipaddress+' is Unreachable,The reason is '+ str(e)).strip()
+            return HttpResponse(content)
+        else:
+            pid  = str(request.GET['sql'])
+            pid=pid.split()
+            for i in pid:
+                pid1.append('\''+str(i).strip().upper()+'\'')
+            pid=','.join(pid1)
+
+
+            cursor = db.cursor()
+            row=getprocesstext(cursor,pid)
+            cursor.close()
+            db.close()
+            title='数据库段的大小-'+ipaddress+'-'+tnsname
+            tr=['SPID','SID','HASH_VALUE','SQL_TEXT','LOGON_TIME','PROGRAM']
+            dic ={'title':title,'tr':tr,'row':row}
+            return render_to_response('oracle_command_result_6.html',dic)
+    elif command_content=='check_session_process':
+        try:
+            db = cx_Oracle.connect(username+'/'+password+'@'+ipaddress+':'+port+'/'+tnsname ,mode=cx_Oracle.SYSDBA)
+        except Exception , e:
+            content= (ipaddress+' is Unreachable,The reason is '+ str(e)).strip()
+            return HttpResponse(content)
+        else:
+            sid  = str(request.GET['sql'])
+            cursor = db.cursor()
+            row=getprocessno(cursor,sid)
+            cursor.close()
+            db.close()
+            title='数据库进程号-'+ipaddress+'-'+tnsname
+            #tr=['SPID','SID','HASH_VALUE','SQL_TEXT','LOGON_TIME','PROGRAM']
+            dic ={'title':title,'row':row}
+            return render_to_response('oracle_command_result_1.html',dic)
+	    #return HttpResponse('进程号为: '+row[0])
+
+    elif command_content=='check_sqlplan':
+        try:
+	    conn=MySQLdb.connect(host='localhost',user='root',passwd='dgvtG@ng6',db='oracle',port=3306)
+        except Exception , e:
+            content= (ipaddress+' is Unreachable,The reason is '+ str(e)).strip()
+            return HttpResponse(content)
+        else:
+	    cur=conn.cursor()
+	    cur.execute('delete from  oracle.oracle_sqlplan')
+	    conn.commit()
+	    info='select  username, password,port from oracle.oracle_oraclelist where ipaddress=\''+str(ipaddress)+'\' and tnsname=\''+str(tnsname)+'\';'
+	    cur.execute(info)
+	    conninfo=cur.fetchone()
+	    username=conninfo[0]
+	    password=conninfo[1]
+	    prot=conninfo[2]
+            sqlid  = str(request.GET['sql'])
+	    db = cx_Oracle.connect(username+'/'+password+'@'+ipaddress+':'+port+'/'+tnsname ,mode=cx_Oracle.SYSDBA)
+            cursor = db.cursor()
+            sql_plan=getsqlplan(cursor,sqlid)
+            cursor.close()
+            db.close()
+	    #return HttpResponse(sql_plan)
+	    if sql_plan:
+            	for j in sql_plan:
+                    child_number=j[1]
+                    pid=j[0]
+                    depth=j[2]
+                    if j[4]== None:
+                        options=''
+                        description=j[2]*' '+j[3]+' '+options
+                    else:
+                        description=j[2]*' '+j[3]+' '+j[4]
+                    object_owner=j[5]
+		    if object_owner==None:
+			object_owner=''
+                    object_name=j[6]
+		    if object_name==None:
+			object_name=''
+                    object_node=j[7]
+		    if object_node==None:
+			object_node=''
+                    cost=j[8]
+		    if cost==None:
+			cost=''
+                    cardinality=j[9]
+		    if cardinality==None:
+			cardinality=''
+                    rbytes=j[10]
+		    if rbytes==None:
+			rbytes=''
+                    io_cost=j[11]
+		    if io_cost==None:
+			io_cost=''
+                    if j[12]==None:
+                        access_predicates=''
+                    else:
+                        access_predicates=j[12][:999]
+		#	access_predicates=r'{access_predicates}'
+                    if j[13]==None:
+                        filter_predicates=''
+                    else:
+                        filter_predicates=j[13][:999]
+		    cur.execute("insert into oracle.oracle_sqlplan (pid,child_number,depth,description,object_owner,object_name,object_node,cost,cardinality,bytes,io_cost,access_predicates,filter_predicates) values (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)",(pid,child_number,depth,description,object_owner,object_name,object_node,cost,cardinality,rbytes,io_cost,access_predicates,filter_predicates))
+		    conn.commit()
+	    else:
+	        #return HttpResponse('dsa')
+                title='No SQL Plan Found!'
+                dic ={'title':title}
+		return render_to_response('oracle_command_result_1.html',dic)
+
+	    getsql_text='select description,object_owner,object_name,object_node,cost,cardinality,bytes,io_cost,access_predicates,filter_predicates from oracle.oracle_sqlplan order by child_number,pid;'
+            cur.execute(getsql_text)
+            row=cur.fetchall()
+	    cur.close()
+            conn.close()
+
+            title='数据库执行计划-'+ipaddress+'-'+tnsname+'-'+sqlid
+            tr=['DESCRIPTION','OBJECT_OWNER','OBJECT_NAME','OBJECT_NODE','COST','CARDINALITY','BYTES','IO_COST','ACCESS','FILTER']
+            dic ={'title':title,'tr':tr,'row':row}
+            return render_to_response('oracle_command_result_sqlplan.html',dic)
