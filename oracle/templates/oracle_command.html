@@ -14,7 +14,14 @@ $(function() {
 	    b.show();
       }	else
 	    b.hide();
-    });
+       });
+
+var c=$('#sql')
+c.on('focus',function(){
+	c.innerHTML=''
+	//alert('sa')
+	})
+
 })
 </script>
 
@@ -79,10 +86,10 @@ $(function() {
 
 <div id='sqlarea'  class="form-group" hidden>
     <label for="sql22">请输入相关文本</label>
-    <textarea class="form-control" name='sql'  rows=3 ></textarea>
+    <textarea class="form-control" name='sql' id='sql' rows=1 >多条请用空格分隔</textarea>
 </div>
 
-<button type="submit"  class="btn btn-primary" value="OK">Submit</button>
+<button type="submit"  class="btn btn-primary" value="OK">确定</button>
 </form>
 
 </div>
